@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coding Agent — Free AI Code Assistant & Developer Tools</title>
+<meta name="description" content="Free Coding Agent: AI code assistant, code playground, JSON formatter, Base64, regex tester, markdown preview, color converter and code snippets. No server, no login, no payment.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header class="hero">
+    <div class="hero-row">
+      <div>
+        <h1>💻 Coding Agent<br>Free AI Code Assistant &amp; Developer Tools</h1>
+        <p>Write, explain, fix and run code — plus the everyday developer utilities, all in one place.</p>
+        <div>
+          <span class="badge">✓ Free</span>
+          <span class="badge">✓ No login</span>
+          <span class="badge">✓ No payment</span>
+          <span class="badge">✓ Code stays on your device</span>
+        </div>
+      </div>
+      <button class="btn btn-light" id="shareBtn" type="button">🔗 Share</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" type="button" data-tab="ai">🤖 AI Assistant</button>
+    <button class="tab" type="button" data-tab="playground">▶️ Playground</button>
+    <button class="tab" type="button" data-tab="utils">🛠️ Utilities</button>
+    <button class="tab" type="button" data-tab="snippets">📚 Snippets</button>
+  </nav>
+
+  <!-- 1. AI ASSISTANT -->
+  <section class="card tab-panel" id="panel-ai">
+    <h2>🤖 AI Code Assistant</h2>
+    <p>Ask the AI to write, explain, fix or convert code. Answers in English, with code blocks.</p>
+    <div class="notice" id="noKeyNotice">
+      <b>⚠️ No API key yet</b><br>
+      To use the AI, add your own <b>OpenAI-compatible API key</b> (OpenRouter / FreeModel) in Settings below.
+      The key is stored only in this browser's localStorage — never in the code, never sent anywhere else.
+      Without a key you can still use the offline code templates below.
+    </div>
+    <details>
+      <summary>⚙️ Settings — API Key, Endpoint, Model</summary>
+      <label for="apiEndpoint">Endpoint URL</label>
+      <input type="url" id="apiEndpoint" value="https://openrouter.ai/api/v1/chat/completions">
+      <div class="row">
+        <div>
+          <label for="apiModel">Model name</label>
+          <input type="text" id="apiModel" value="meta-llama/llama-3.3-70b-instruct:free" placeholder="e.g. meta-llama/llama-3.3-70b-instruct:free">
+          <p class="status">For FreeModel, change the endpoint and model name to the ones FreeModel gives you (e.g. glm-5.3-flash).</p>
+        </div>
+        <div>
+          <label for="apiKey">API Key (your own key)</label>
+          <input type="password" id="apiKey" placeholder="Paste your key here — only you can see it" autocomplete="off">
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" id="saveKeyBtn" type="button">💾 Save Key</button>
+        <button class="btn btn-ghost" id="clearKeyBtn" type="button">🗑️ Delete Key</button>
+        <button class="btn btn-ghost" id="testKeyBtn" type="button">🔍 Test Key</button>
+      </div>
+      <p class="status" id="keyStatus">Key status: not saved yet</p>
+      <p class="status">⚠️ Never paste passwords, wallet seed phrases or bank details into this chat.</p>
+    </details>
+
+    <div class="chips" id="quickActions">
+      <button class="chip" type="button" data-prompt="Write code">✍️ Write code</button>
+      <button class="chip" type="button" data-prompt="Explain code">📖 Explain code</button>
+      <button class="chip" type="button" data-prompt="Fix / debug code">🐛 Fix / debug code</button>
+      <button class="chip" type="button" data-prompt="Convert language">🔄 Convert language</button>
+      <button class="chip" type="button" data-prompt="Add comments">💬 Add comments</button>
+      <button class="chip" type="button" data-prompt="Optimize code">⚡ Optimize code</button>
+    </div>
+
+    <div class="chat" id="chatLog" aria-live="polite">
+      <div class="msg ai">Hello! 👋 Paste your code or describe what you want to build, then press Send — or tap a preset above.<br><br>No key? Use the offline templates below to get started.</div>
+    </div>
+    <label for="chatInput">Your code / question</label>
+    <textarea id="chatInput" class="code-input" placeholder="e.g. Write a JavaScript function that sorts an array of numbers..."></textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="sendBtn" type="button">📤 Send</button>
+      <button class="btn btn-ghost" id="clearChatBtn" type="button">🧹 Clear Chat</button>
+    </div>
+    <p class="status" id="aiStatus"></p>
+
+    <h3>Offline code templates (no key needed)</h3>
+    <div class="row">
+      <button class="btn btn-ghost" id="tplHelloBtn" type="button">Hello World</button>
+      <button class="btn btn-ghost" id="tplFetchBtn" type="button">Fetch API</button>
+      <button class="btn btn-ghost" id="tplSortBtn" type="button">Sort Array</button>
+    </div>
+    <pre class="code-output" id="offlineOutput">// Pick a template above — the code will appear here.</pre>
+    <div class="row">
+      <button class="btn btn-ghost" id="copyOfflineBtn" type="button">📋 Copy Template</button>
+    </div>
+  </section>
+
+  <!-- 2. PLAYGROUND -->
+  <section class="card tab-panel hidden" id="panel-playground">
+    <h2>▶️ Code Playground</h2>
+    <p>Write code and run JavaScript right in your browser. Python and HTML are shown for reference — only JavaScript runs here.</p>
+    <div class="row">
+      <div>
+        <label for="playLang">Language</label>
+        <select id="playLang">
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="html">HTML</option>
+        </select>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <div class="row">
+          <button class="btn btn-primary" id="runBtn" type="button">▶️ Run JavaScript</button>
+          <button class="btn btn-ghost" id="copyPlayBtn" type="button">📋 Copy</button>
+          <button class="btn btn-ghost" id="downloadPlayBtn" type="button">⬇️ Download</button>
+        </div>
+      </div>
+    </div>
+    <label for="playCode">Code</label>
+    <textarea id="playCode" class="code-input tall" spellcheck="false">// Try it — edit me, then press Run JavaScript
+const numbers = [5, 2, 9, 1, 7];
+const sorted = [...numbers].sort((a, b) => a - b);
+console.log("Sorted:", sorted);
+console.log("Sum:", sorted.reduce((a, b) => a + b, 0));</textarea>
+    <p class="status" id="playCount">0 lines • 0 characters</p>
+    <label>Output</label>
+    <pre class="code-output" id="playOutput">// Output will appear here after you press Run.</pre>
+    <p class="status" id="playNote">JavaScript runs locally with console.log captured. Python / HTML are not executed — copy them to run elsewhere.</p>
+  </section>
+
+  <!-- 3. UTILITIES -->
+  <section class="card tab-panel hidden" id="panel-utils">
+    <h2>🛠️ Code Utilities</h2>
+    <p>Everyday developer tools — everything runs in your browser, nothing is uploaded.</p>
+
+    <h3>JSON Formatter / Validator</h3>
+    <label for="jsonInput">JSON</label>
+    <textarea id="jsonInput" class="code-input" spellcheck="false">{"name": "Coding Agent", "free": true, "tools": ["json", "base64", "regex"]}</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="jsonPrettyBtn" type="button">✨ Pretty-print</button>
+      <button class="btn btn-ghost" id="jsonMinifyBtn" type="button">📦 Minify</button>
+      <button class="btn btn-ghost" id="jsonValidateBtn" type="button">✅ Validate</button>
+    </div>
+    <pre class="code-output" id="jsonOutput">// Formatted JSON will appear here.</pre>
+    <p class="status" id="jsonStatus"></p>
+
+    <h3>Base64 Encode / Decode</h3>
+    <label for="b64Input">Text</label>
+    <textarea id="b64Input" class="code-input">Hello, Coding Agent!</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="b64EncodeBtn" type="button">🔒 Encode</button>
+      <button class="btn btn-ghost" id="b64DecodeBtn" type="button">🔓 Decode</button>
+    </div>
+    <pre class="code-output" id="b64Output">// Result will appear here.</pre>
+
+    <h3>URL Encode / Decode</h3>
+    <label for="urlInput">Text / URL</label>
+    <textarea id="urlInput" class="code-input">https://example.com/search?q=free tools &amp; page=1</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="urlEncodeBtn" type="button">🔒 Encode</button>
+      <button class="btn btn-ghost" id="urlDecodeBtn" type="button">🔓 Decode</button>
+    </div>
+    <pre class="code-output" id="urlOutput">// Result will appear here.</pre>
+
+    <h3>Regex Tester</h3>
+    <div class="row">
+      <div>
+        <label for="regexPattern">Pattern</label>
+        <input type="text" id="regexPattern" value="\b\w+@\w+\.\w+\b">
+      </div>
+      <div>
+        <label for="regexFlags">Flags</label>
+        <input type="text" id="regexFlags" value="gi">
+      </div>
+    </div>
+    <label for="regexText">Test string</label>
+    <textarea id="regexText" class="code-input">Contact us at hello@example.com or support@free-tools.dev for help.</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="regexTestBtn" type="button">🔍 Test Regex</button>
+    </div>
+    <pre class="code-output" id="regexOutput">// Matches will appear here.</pre>
+    <p class="status" id="regexStatus"></p>
+
+    <h3>Markdown Preview</h3>
+    <label for="mdInput">Markdown</label>
+    <textarea id="mdInput" class="code-input"># Hello
+This is **bold** and *italic*.
+- Item one
+- Item two
+[Free Tools](https://hiat01.github.io/)</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="mdPreviewBtn" type="button">👁️ Preview</button>
+    </div>
+    <div class="md-preview" id="mdOutput"><em>Preview will appear here.</em></div>
+
+    <h3>Color Converter (HEX ↔ RGB)</h3>
+    <div class="row">
+      <div>
+        <label for="hexInput">HEX</label>
+        <input type="text" id="hexInput" value="#2563eb">
+      </div>
+      <div>
+        <label for="rgbInput">RGB</label>
+        <input type="text" id="rgbInput" value="37, 99, 235">
+      </div>
+      <div>
+        <label>Preview</label>
+        <div class="color-swatch" id="colorSwatch"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn btn-primary" id="hexToRgbBtn" type="button">HEX → RGB</button>
+      <button class="btn btn-ghost" id="rgbToHexBtn" type="button">RGB → HEX</button>
+    </div>
+    <p class="status" id="colorStatus"></p>
+
+    <h3>Text Tools</h3>
+    <label for="textInput">Text</label>
+    <textarea id="textInput" class="code-input">  Hello   World!  This is a   sample text.  </textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="textCountBtn" type="button">🔢 Count</button>
+      <button class="btn btn-ghost" id="textUpperBtn" type="button">⬆️ UPPERCASE</button>
+      <button class="btn btn-ghost" id="textLowerBtn" type="button">⬇️ lowercase</button>
+      <button class="btn btn-ghost" id="textSpacesBtn" type="button">🧹 Remove Extra Spaces</button>
+    </div>
+    <pre class="code-output" id="textOutput">// Result will appear here.</pre>
+    <p class="status" id="textStatus"></p>
+  </section>
+
+  <!-- 4. SNIPPETS -->
+  <section class="card tab-panel hidden" id="panel-snippets">
+    <h2>📚 Snippet Library</h2>
+    <p>Ready-to-use code snippets. Press Copy, then paste them into your own project.</p>
+    <div id="snippetList"></div>
+  </section>
+
+  <footer>
+    <p>🔒 Privacy: your code, API key and files stay on this device — there is no server. The AI only sends your messages to the API endpoint you choose (OpenRouter / FreeModel).<br>
+    Free forever — deploy free on GitHub Pages. See README.md.</p>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
